@@ -3,39 +3,60 @@ package org.example;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Arrays;
 
 public class AnagramParser {
-    private Map<String, List<String>> anagramGroups;
+    private static final String DEFAULT_FILE_PATH = "src/main/resources/sample.txt";
+
+    private final Map<String, List<String>> anagramGroups = new HashMap<>();
+    private final String filePath;
 
     public AnagramParser() {
-        this.anagramGroups = new HashMap<>();
+        this.filePath = DEFAULT_FILE_PATH;
     }
 
-    public void processFile(String filePath) throws IOException {
-        List<String> words = Files.readAllLines(Paths.get(filePath));
-        groupAnagrams(words);
+    public AnagramParser(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public Map<String, List<String>> getAnagramGroups() {
+        return anagramGroups;
+    }
+
+    public void processFile() {
+        try {
+            groupAnagrams(Files.readAllLines(Paths.get(filePath)));
+        } catch (IOException e) {
+            System.err.println("Error processing file: " + e.getMessage());
+            System.err.println("Please check file path and permissions");
+        }
+    }
+
+    public void print() {
+        anagramGroups
+                .values()
+                .stream()
+                .map(it -> String.join(" ", it))
+                .forEach(System.out::println);
     }
 
     private void groupAnagrams(List<String> words) {
-        for (String word : words) {
+        words.forEach(word -> {
             String key = generateAnagramKey(word);
             if (!anagramGroups.containsKey(key)) {
                 anagramGroups.put(key, new ArrayList<>());
             }
             anagramGroups.get(key).add(word);
-        }
+        });
     }
 
     private String generateAnagramKey(String word) {
         char[] chars = word.toCharArray();
         Arrays.sort(chars);
-        return new String(chars);
-    }
-
-    public void printAnagrams() {
-        for (List<String> group : anagramGroups.values()) {
-            System.out.println(String.join(" ", group));
-        }
+        return Arrays.toString(chars);
     }
 }
